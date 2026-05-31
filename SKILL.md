@@ -1,17 +1,17 @@
 ---
 name: ppt-builder
-description: Build a structured, presentable PowerPoint deck (.pptx) from repo changes or concepts, optionally inheriting a company template. Use when the user asks to make slides, build a PPT/PPTX, prepare a presentation, present a diff or PR, write a design-review deck, or create a deck from a repo. Enforces a narrative-first workflow with assertion-evidence slides and a density validator so output is not a wall-of-text white slide.
+description: A professional presentation generator. Build structured, high-impact PowerPoint decks (.pptx) from raw ideas, concepts, or technical specifications. Use when the user asks to brainstorm a presentation, create slides, build a PPT/PPTX, or present a project/change. Enforces a narrative-first workflow with assertion-evidence slides and a density validator to ensure the output is professional and communicative.
 ---
 
 # ppt-builder
 
-A skill for turning repo changes and concepts into structured `.pptx` decks. The core idea is **two-stage generation**: first an `outline.yaml` (the structured prompt), then a deterministic build through `python-pptx` plus mermaid rendering.
+A professional, narrative-driven presentation tool for Cursor. Transform raw concepts into structured `.pptx` decks by following a rigorous storytelling framework. The core idea is **two-stage generation**: first an `outline.yaml` (the structured prompt), then a deterministic build through `python-pptx` plus optional mermaid rendering.
 
-`outline.yaml` is the source of truth. Hand-edit it and rebuild. Avoid editing the `.pptx` by hand for anything structural.
+`outline.yaml` is the source of truth. Edit it to refine your deck and rebuild. Avoid manual `.pptx` structural edits.
 
 ## Entry conditions
 
-Use this skill when the user wants slides, a deck, a `.pptx`, a presentation, or wants to present a repo change / concept / architecture / PR. If the user asks for a one-off chart or a doc, this is the wrong tool.
+Use this skill when the user wants to brainstorm a presentation, create a deck, explain a concept, or present any technical/business topic. If the user asks for a simple chart or a text document, this is the wrong tool.
 
 ## Required reading before drafting
 

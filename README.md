@@ -1,6 +1,8 @@
 # ppt-builder — Cursor skill
 
-Turn repo changes or concepts into clean `.pptx` decks, not wordy white slides.
+**AI-driven Presentation-as-Code.** Transform raw ideas, system architectures, or code changes into structured, professional `.pptx` decks.
+
+Say goodbye to wall-of-text white slides. This skill enforces a narrative-first workflow and "Assertion-Evidence" slide design to create presentations that actually communicate.
 
 ---
 
@@ -45,39 +47,39 @@ If not installed, `type: diagram` slides will show placeholder text instead of b
 
 ## Usage
 
-### Simplest: Talk to the Cursor agent
+### 1. Talk to the Cursor Agent (Recommended)
 
-In any project's Cursor chat, say:
+In any project's Cursor chat, simply start a conversation. The Agent will guide you through discovery, narrative drafting, and final generation. Try:
 
-- "Help me turn this PR into a 15-minute deck"
-- "Make a design review presentation"
-- "Turn this concept into a ppt for engineers, 20 minutes"
-- "Use `./company.pptx` as a template to make a ppt"
+- "I want to explain the concept of [Topic] to [Audience], help me brainstorm a 10-slide deck."
+- "Create a pitch deck for a new feature that does [X]."
+- "Turn this technical design doc into a presentation for the executive team."
+- "Use `./company-template.pptx` to make a presentation about our Q3 goals."
 
-The agent will walk you through 7 phases (asking for audience / duration / goal → writing a narrative outline for your confirmation → generating outline.yaml → validation → outputting .pptx).
+### 2. Manual Workflow (for Power Users)
 
-**The most important step is Phase 3**: the agent will write the entire presentation's story in plain text for you to review. Don't skip this step, otherwise, the slides won't have a logical flow.
+If you prefer to define your slides directly, you can use the `outline.yaml` format.
 
-### Manual Run
+1. **Pick a starting point**: Choose a file from the `examples/` folder.
+2. **Modify**: Edit the YAML to fit your content.
+3. **Build**:
+   ```powershell
+   # Validate the structure and content density
+   python scripts/validate_outline.py my-deck.outline.yaml
 
-Copy an outline from examples and modify it:
+   # Generate the PowerPoint file
+   python scripts/build_deck.py my-deck.outline.yaml
+   ```
 
-```powershell
-cd your-working-directory
-copy "$env:USERPROFILE\.cursor\skills\ppt-builder\examples\repo-change.outline.yaml" my-talk.outline.yaml
-```
+---
 
-Edit `my-talk.outline.yaml`, then:
+## 📂 Examples
 
-```powershell
-# Validate (schema errors + density warnings)
-python "$env:USERPROFILE\.cursor\skills\ppt-builder\scripts\validate_outline.py" my-talk.outline.yaml
+The `examples/` directory contains pre-configured outlines for common scenarios. You can use these as templates:
 
-# Generate pptx
-python "$env:USERPROFILE\.cursor\skills\ppt-builder\scripts\build_deck.py" my-talk.outline.yaml
-```
-
-The output path is set in `meta.output` within `outline.yaml`.
+- `concept-explainer.outline.yaml`: Best for teaching new ideas or primers.
+- `architecture-review.outline.yaml`: Best for system designs or structural proposals.
+- `repo-change.outline.yaml`: Best for technical walkthroughs or PR reviews.
 
 ---
 
@@ -192,6 +194,16 @@ ppt-builder/
     ├── build_deck.py         # outline.yaml → .pptx
     ├── validate_outline.py   # schema + density + pacing validation
     ├── inspect_template.py   # Analyze company .pptx template
+    ├── render_mermaid.py     # mermaid → PNG (requires Node)
+    ├── build_default_template.py
+    ├── smoke_test.py
+    └── lib/
+        ├── schema.py   # Pydantic models
+        ├── layouts.py  # slide type → layout mapping
+        ├── renderers.py
+        └── theme.py
+```
+.py   # Analyze company .pptx template
     ├── render_mermaid.py     # mermaid → PNG (requires Node)
     ├── build_default_template.py
     ├── smoke_test.py

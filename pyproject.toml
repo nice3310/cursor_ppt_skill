@@ -1,7 +1,7 @@
 [project]
 name = "ppt-builder"
 version = "0.1.0"
-description = "Cursor skill for building structured, template-aware PowerPoint decks from outline.yaml"
+description = "AI-driven Presentation-as-Code Cursor skill. Build professional, structured PowerPoint decks from raw ideas or code."
 requires-python = ">=3.9"
 dependencies = [
     "python-pptx>=1.0.2",
