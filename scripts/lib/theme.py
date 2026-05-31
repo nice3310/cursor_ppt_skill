@@ -1,4 +1,4 @@
-"""Design system for ppt-builder.
+"""Design system for cursor-ppt-skill.
 
 A Theme is a bundle of color, type, and spacing tokens that the renderers read.
 Two presets ship: "light" (default, editorial) and "dark". Select via

@@ -1,8 +1,17 @@
-# ppt-builder — Cursor skill
+# cursor-ppt-skill — Cursor skill
 
-**AI-driven Presentation-as-Code.** Transform raw ideas, system architectures, or code changes into structured, professional `.pptx` decks.
+**Professional slides from any idea.** Transform raw concepts, structured thoughts, or technical changes into polished, high-impact `.pptx` decks.
 
-Say goodbye to wall-of-text white slides. This skill enforces a narrative-first workflow and "Assertion-Evidence" slide design to create presentations that actually communicate.
+Stop fighting with PowerPoint. This skill handles the structure, layout, and visual logic, allowing you to focus on the story. It enforces a "Narrative-first" workflow to ensure your presentations are clear, persuasive, and professional.
+
+---
+
+## 🚀 Key Capabilities
+
+- **From Scratch**: Give it a topic, and it brainstorms the narrative arc and slide content.
+- **Visual Logic**: Automatically renders diagrams (Mermaid), code blocks, and comparison charts.
+- **Design Guardrails**: Prevents "death by bullets" with built-in density validation.
+- **Template Aware**: Inherit your company's branding by simply pointing to an existing `.pptx`.
 
 ---
 
@@ -10,16 +19,16 @@ Say goodbye to wall-of-text white slides. This skill enforces a narrative-first 
 
 ### Step 1: Copy to Cursor personal skills folder
 
-Cursor reads personal skills from this path. Put the entire `ppt-builder/` folder there:
+Cursor reads personal skills from this path. Put the entire `cursor-ppt-skill/` folder there:
 
 **Windows**
 ```powershell
-Copy-Item -Recurse "ppt-builder" "$env:USERPROFILE\.cursor\skills\ppt-builder"
+Copy-Item -Recurse "cursor-ppt-skill" "$env:USERPROFILE\.cursor\skills\cursor-ppt-skill"
 ```
 
 **macOS / Linux**
 ```bash
-cp -r ppt-builder ~/.cursor/skills/ppt-builder
+cp -r cursor-ppt-skill ~/.cursor/skills/cursor-ppt-skill
 ```
 
 After restarting Cursor, typing "help me make a ppt" in chat will automatically trigger this skill.
@@ -37,7 +46,7 @@ pip install python-pptx pydantic pyyaml pillow pygments
 Only needed if you want to draw architecture/flow diagrams. Requires Node.js.
 
 ```powershell
-cd ~/.cursor/skills/ppt-builder   # For Windows: $env:USERPROFILE\.cursor\skills\ppt-builder
+cd ~/.cursor/skills/cursor-ppt-skill   # For Windows: $env:USERPROFILE\.cursor\skills\cursor-ppt-skill
 npm install
 ```
 
@@ -148,14 +157,14 @@ See `outline-schema.md` for full specifications of all 11 slide types.
 
 ```powershell
 # Inspect what layouts the template has first
-python "$env:USERPROFILE\.cursor\skills\ppt-builder\scripts\inspect_template.py" company.pptx
+python "$env:USERPROFILE\.cursor\skills\cursor-ppt-skill\scripts\inspect_template.py" company.pptx
 
 # Set template path in outline.yaml
 # meta:
 #   template: "./company.pptx"
 
 # Build (will inherit master slide colors/fonts/logos)
-python "$env:USERPROFILE\.cursor\skills\ppt-builder\scripts\build_deck.py" my-talk.outline.yaml
+python "$env:USERPROFILE\.cursor\skills\cursor-ppt-skill\scripts\build_deck.py" my-talk.outline.yaml
 ```
 
 If no template is set, it defaults to `templates/default.pptx` (16:9 clean white background).
@@ -178,7 +187,7 @@ Each line is an action instruction: if there are more than 5 bullets, split the 
 ## Directory Structure
 
 ```
-ppt-builder/
+cursor-ppt-skill/
 ├── SKILL.md                # Cursor skill entry point
 ├── methodology.md          # Narrative arc / billboard test / speaker notes philosophy
 ├── outline-schema.md       # Full YAML spec for 11 slide types
@@ -194,16 +203,6 @@ ppt-builder/
     ├── build_deck.py         # outline.yaml → .pptx
     ├── validate_outline.py   # schema + density + pacing validation
     ├── inspect_template.py   # Analyze company .pptx template
-    ├── render_mermaid.py     # mermaid → PNG (requires Node)
-    ├── build_default_template.py
-    ├── smoke_test.py
-    └── lib/
-        ├── schema.py   # Pydantic models
-        ├── layouts.py  # slide type → layout mapping
-        ├── renderers.py
-        └── theme.py
-```
-.py   # Analyze company .pptx template
     ├── render_mermaid.py     # mermaid → PNG (requires Node)
     ├── build_default_template.py
     ├── smoke_test.py

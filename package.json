@@ -1,8 +1,8 @@
 {
-  "name": "ppt-builder-mermaid",
+  "name": "cursor-ppt-skill-mermaid",
   "version": "0.1.0",
   "private": true,
-  "description": "Mermaid CLI wrapper for ppt-builder diagram rendering",
+  "description": "Mermaid CLI wrapper for cursor-ppt-skill diagram rendering",
   "scripts": {
     "render": "mmdc"
   },

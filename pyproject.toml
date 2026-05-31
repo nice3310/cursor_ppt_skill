@@ -1,5 +1,5 @@
 [project]
-name = "ppt-builder"
+name = "cursor-ppt-skill"
 version = "0.1.0"
 description = "AI-driven Presentation-as-Code Cursor skill. Build professional, structured PowerPoint decks from raw ideas or code."
 requires-python = ">=3.9"
