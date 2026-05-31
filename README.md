@@ -1,4 +1,4 @@
-# cursor-ppt-skill — Cursor skill
+# cursor_ppt_skill — Cursor skill
 
 **Professional slides from any idea.** Transform raw concepts, structured thoughts, or technical changes into polished, high-impact `.pptx` decks.
 
@@ -19,16 +19,16 @@ Stop fighting with PowerPoint. This skill handles the structure, layout, and vis
 
 ### Step 1: Copy to Cursor personal skills folder
 
-Cursor reads personal skills from this path. Put the entire `cursor-ppt-skill/` folder there:
+Cursor reads personal skills from this path. Put the entire `cursor_ppt_skill/` folder there:
 
 **Windows**
 ```powershell
-Copy-Item -Recurse "cursor-ppt-skill" "$env:USERPROFILE\.cursor\skills\cursor-ppt-skill"
+Copy-Item -Recurse "cursor_ppt_skill" "$env:USERPROFILE\.cursor\skills\cursor_ppt_skill"
 ```
 
 **macOS / Linux**
 ```bash
-cp -r cursor-ppt-skill ~/.cursor/skills/cursor-ppt-skill
+cp -r cursor_ppt_skill ~/.cursor/skills/cursor_ppt_skill
 ```
 
 After restarting Cursor, typing "help me make a ppt" in chat will automatically trigger this skill.
@@ -46,7 +46,7 @@ pip install python-pptx pydantic pyyaml pillow pygments
 Only needed if you want to draw architecture/flow diagrams. Requires Node.js.
 
 ```powershell
-cd ~/.cursor/skills/cursor-ppt-skill   # For Windows: $env:USERPROFILE\.cursor\skills\cursor-ppt-skill
+cd ~/.cursor/skills/cursor_ppt_skill   # For Windows: $env:USERPROFILE\.cursor\skills\cursor_ppt_skill
 npm install
 ```
 
@@ -157,14 +157,14 @@ See `outline-schema.md` for full specifications of all 11 slide types.
 
 ```powershell
 # Inspect what layouts the template has first
-python "$env:USERPROFILE\.cursor\skills\cursor-ppt-skill\scripts\inspect_template.py" company.pptx
+python "$env:USERPROFILE\.cursor\skills\cursor_ppt_skill\scripts\inspect_template.py" company.pptx
 
 # Set template path in outline.yaml
 # meta:
 #   template: "./company.pptx"
 
 # Build (will inherit master slide colors/fonts/logos)
-python "$env:USERPROFILE\.cursor\skills\cursor-ppt-skill\scripts\build_deck.py" my-talk.outline.yaml
+python "$env:USERPROFILE\.cursor\skills\cursor_ppt_skill\scripts\build_deck.py" my-talk.outline.yaml
 ```
 
 If no template is set, it defaults to `templates/default.pptx` (16:9 clean white background).
@@ -187,7 +187,7 @@ Each line is an action instruction: if there are more than 5 bullets, split the 
 ## Directory Structure
 
 ```
-cursor-ppt-skill/
+cursor_ppt_skill/
 ├── SKILL.md                # Cursor skill entry point
 ├── methodology.md          # Narrative arc / billboard test / speaker notes philosophy
 ├── outline-schema.md       # Full YAML spec for 11 slide types

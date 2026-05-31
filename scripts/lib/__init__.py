@@ -1,1 +1,1 @@
-"""Internal library for the cursor-ppt-skill skill."""
+"""Internal library for the cursor_ppt_skill skill."""

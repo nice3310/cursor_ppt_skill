@@ -1,9 +1,9 @@
 ---
-name: cursor-ppt-skill
+name: cursor_ppt_skill
 description: A professional presentation generator. Build structured, high-impact PowerPoint decks (.pptx) from raw ideas, concepts, or technical specifications. Use when the user asks to brainstorm a presentation, create slides, build a PPT/PPTX, or present a project/change. Enforces a narrative-first workflow with assertion-evidence slides and a density validator to ensure the output is professional and communicative.
 ---
 
-# cursor-ppt-skill
+# cursor_ppt_skill
 
 A professional, narrative-driven presentation tool for Cursor. Transform raw concepts into structured `.pptx` decks by following a rigorous storytelling framework. The core idea is **two-stage generation**: first an `outline.yaml` (the structured prompt), then a deterministic build through `python-pptx` plus optional mermaid rendering.
 
