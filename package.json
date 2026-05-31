@@ -1,0 +1,12 @@
+{
+  "name": "ppt-builder-mermaid",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mermaid CLI wrapper for ppt-builder diagram rendering",
+  "scripts": {
+    "render": "mmdc"
+  },
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^11.4.0"
+  }
+}

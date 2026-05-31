@@ -1,0 +1,84 @@
+# Example: explaining a concept (CRDTs) to an internal audience.
+meta:
+  title: "CRDTs in 10 minutes"
+  subtitle: "An internal primer"
+  presenter: "Y.J. Chen"
+  date: "2026-05-29"
+  output: "./concept-explainer.pptx"
+
+narrative:
+  audience: "engineers exploring offline-first sync; no formal distributed-systems background assumed"
+  duration_minutes: 10
+  goal: "Give a working mental model of CRDTs so the team can read the design doc"
+  key_takeaways:
+    - "CRDTs guarantee convergence without coordination"
+    - "Pick state- or op-based based on network shape"
+    - "Map our use cases to existing CRDT types before inventing one"
+
+slides:
+  - type: title
+    title: "CRDTs in 10 minutes"
+    subtitle: "An internal primer"
+
+  - type: statement
+    headline: "Two replicas see different orders. They still end up equal."
+
+  - type: quote
+    quote: "Anything you can merge with a commutative, associative, idempotent operation will converge."
+    attribution: "the entire field, summarised"
+
+  - type: bullets
+    title: "What we want"
+    headline: "Convergence is the only invariant we actually need."
+    bullets:
+      - "Multiple writers, no central coordinator"
+      - "Eventually all replicas equal"
+      - "No coordination on the write path"
+
+  - type: comparison
+    title: "Two flavours"
+    headline: "Pick state-based for chat-like sync, op-based for high churn."
+    columns:
+      - label: "State-based (CvRDT)"
+        bullets:
+          - "Replicas exchange full state"
+          - "Merge via least upper bound"
+          - "Simple to reason about, heavier on bandwidth"
+      - label: "Op-based (CmRDT)"
+        bullets:
+          - "Replicas exchange operations"
+          - "Operations must be commutative"
+          - "Needs reliable causal delivery"
+
+  - type: code
+    title: "G-Counter merge"
+    headline: "A grow-only counter is just per-replica counts plus pointwise max."
+    language: "python"
+    code: |
+      def merge(a: dict[str, int], b: dict[str, int]) -> dict[str, int]:
+          return {k: max(a.get(k, 0), b.get(k, 0)) for k in a.keys() | b.keys()}
+
+      def value(state: dict[str, int]) -> int:
+          return sum(state.values())
+    notes: "Walk through with two replicas incrementing on a whiteboard."
+
+  - type: diagram
+    title: "Convergence intuition"
+    headline: "Both orderings produce the same merged state."
+    mermaid: |
+      flowchart LR
+        A1["A: +1"] --> A2["A: +2"]
+        B1["B: +1"] --> B2["B: +2"]
+        A2 --> M["merged: {A:2, B:2}"]
+        B2 --> M
+    notes: "If mermaid-cli is missing this slide shows a placeholder; install with `npm install`."
+
+  - type: summary
+    title: "Takeaways"
+    points:
+      - "Convergence > consistency for our offline use case."
+      - "State-based for the editor, op-based for the queue."
+      - "Read the design doc; map use cases to existing types first."
+
+  - type: qa
+    title: "Questions?"

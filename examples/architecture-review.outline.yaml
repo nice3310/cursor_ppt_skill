@@ -1,0 +1,114 @@
+# Example: presenting a system architecture to a design review.
+meta:
+  title: "Notifications platform v2"
+  subtitle: "Design review"
+  presenter: "Y.J. Chen"
+  date: "2026-05-29"
+  output: "./architecture-review.pptx"
+
+narrative:
+  audience: "platform staff + senior engineers reviewing the design"
+  duration_minutes: 20
+  goal: "Approve the v2 architecture and the deprecation plan for v1"
+  key_takeaways:
+    - "v1 cannot absorb 10x growth without redesign"
+    - "v2 separates dispatch from delivery; both scale independently"
+    - "Cutover is dual-write for 4 weeks, then v1 read-only"
+
+slides:
+  - type: title
+    title: "Notifications platform v2"
+    subtitle: "Design review"
+
+  - type: section
+    title: "Context"
+
+  - type: bullets
+    title: "Why now"
+    headline: "v1 is one growth cycle away from breaking."
+    bullets:
+      - "Send volume up 4x year over year"
+      - "Single dispatcher; no per-channel backpressure"
+      - "Delivery state lives in the dispatcher's DB"
+
+  - type: diagram
+    title: "v1 today"
+    headline: "Dispatcher does everything; nothing scales independently."
+    mermaid: |
+      flowchart LR
+        Producers --> Dispatcher
+        Dispatcher --> Email
+        Dispatcher --> Push
+        Dispatcher --> SMS
+        Dispatcher --> DispatcherDB[(state DB)]
+
+  - type: section
+    title: "Proposal"
+
+  - type: diagram
+    title: "v2 proposal"
+    headline: "Split dispatch from delivery; queue between them holds backpressure."
+    mermaid: |
+      flowchart LR
+        Producers --> Router
+        Router --> Queue
+        Queue --> EmailWorker --> Email
+        Queue --> PushWorker --> Push
+        Queue --> SMSWorker --> SMS
+        EmailWorker --> StateDB[(delivery state)]
+        PushWorker --> StateDB
+        SMSWorker --> StateDB
+
+  - type: bullets
+    title: "Properties"
+    headline: "Each channel scales without touching the others."
+    bullets:
+      - "Per-channel workers; horizontal scale per channel"
+      - "Queue absorbs spikes; backpressure is observable"
+      - "State DB owned by workers, not dispatcher"
+
+  - type: comparison
+    title: "v1 vs v2"
+    headline: "v2 is more pieces but each piece is simpler."
+    columns:
+      - label: "v1"
+        bullets:
+          - "One dispatcher service"
+          - "DB is a bottleneck and SPOF"
+          - "Channel failure cascades"
+      - label: "v2"
+        bullets:
+          - "Router plus per-channel workers"
+          - "Queue absorbs spikes"
+          - "Channel failures isolated"
+
+  - type: table
+    title: "Cutover plan"
+    headline: "Four weeks of dual-write, then v1 goes read-only."
+    columns: ["Week", "Mode", "Risk", "Owner"]
+    rows:
+      - ["1", "v2 dark; v1 live", "low", "Y.J."]
+      - ["2", "dual-write 10%", "low", "R.L."]
+      - ["3", "dual-write 100%", "med", "R.L."]
+      - ["4", "v2 live; v1 RO", "med", "Y.J."]
+
+  - type: section
+    title: "Risks"
+
+  - type: bullets
+    title: "Top risks"
+    headline: "Three risks need an owner before we ship."
+    bullets:
+      - "Queue saturation under retry storms"
+      - "Per-channel rate limits, especially SMS"
+      - "State DB schema migration coordination"
+
+  - type: summary
+    title: "Takeaways"
+    points:
+      - "v1 will not survive 10x growth."
+      - "v2 is more services but each one is simpler."
+      - "Approve cutover; assign risk owners today."
+
+  - type: qa
+    title: "Questions?"

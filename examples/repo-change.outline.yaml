@@ -1,0 +1,107 @@
+# Example: explaining a repo change / PR to teammates.
+# Audience is engineers who own the affected service.
+meta:
+  title: "Migrating auth to JWT"
+  subtitle: "Backend sync 2026-Q2"
+  presenter: "Y.J. Chen"
+  date: "2026-05-29"
+  output: "./repo-change.pptx"
+
+narrative:
+  audience: "backend engineers; mixed seniority; owns auth-svc and gateway"
+  duration_minutes: 15
+  goal: "Get consensus on a 3-week phased JWT rollout"
+  key_takeaways:
+    - "Sessions don't scale past 50k concurrent users"
+    - "JWT cuts auth p99 latency by ~38%"
+    - "Migration is reversible at each weekly cutover"
+
+slides:
+  - type: title
+    title: "Migrating auth to JWT"
+    subtitle: "Why, how, when"
+
+  - type: section
+    title: "Part 1 — Why sessions hurt"
+
+  - type: statement
+    kicker: "The problem"
+    headline: "Session storage is our biggest scalability bottleneck."
+    notes: "Source: 2026-Q1 incident review and PagerDuty top-causes report."
+
+  - type: bullets
+    title: "Symptoms"
+    headline: "Three symptoms point at the session table."
+    bullets:
+      - "p99 auth latency above 200 ms during peak"
+      - "Session DB CPU saturates at 70k req/min"
+      - "Two outages in Q1 traced to session-store failover"
+    notes: "Cover the Q1 retro link in chat."
+
+  - type: section
+    title: "Part 2 — Why JWT"
+
+  - type: comparison
+    title: "Sessions vs JWT"
+    kicker: "Trade-off"
+    headline: "JWT trades a DB read per request for a CPU verify per request."
+    columns:
+      - label: "Sessions"
+        bullets:
+          - "DB lookup on every request"
+          - "Easy server-side revocation"
+          - "Storage scales with active users"
+      - label: "JWT"
+        bullets:
+          - "Local signature verify, no DB hit"
+          - "Revocation via short TTL plus denylist"
+          - "Storage scales with key rotations, not users"
+
+  - type: code
+    title: "Token verification middleware"
+    headline: "Verification is 8 lines and stateless."
+    language: "python"
+    highlight_lines: [3, 4, 5]
+    code: |
+      def verify(token: str) -> Claims:
+          try:
+              claims = jwt.decode(
+                  token, PUBLIC_KEY, algorithms=["RS256"], audience="api"
+              )
+          except jwt.InvalidTokenError as e:
+              raise Unauthorized(str(e)) from e
+          return Claims(**claims)
+    notes: "Highlight the algs whitelist; this prevents the alg=none class of bugs."
+
+  - type: image
+    title: "Latency after rollout"
+    kicker: "Evidence"
+    headline: "p99 auth latency fell from 220 ms to 137 ms."
+    path: "./assets/p99-latency.png"
+    caption: "Production, 2026-04-12 to 2026-04-26 (internal dashboard)"
+    source: "Internal Grafana dashboard, auth-svc p99 panel"
+    layout: full
+    notes: "Measured over a 2-week window after the gateway cutover."
+
+  - type: section
+    title: "Part 3 — The rollout"
+
+  - type: table
+    title: "Migration plan"
+    headline: "Three weeks, two reversible cutovers."
+    columns: ["Week", "Service", "Mode", "Owner"]
+    rows:
+      - ["1", "auth-svc", "dual-write", "Y.J."]
+      - ["2", "gateway", "JWT preferred", "R.L."]
+      - ["3", "session DB", "decommission", "Y.J."]
+
+  - type: summary
+    title: "Takeaways"
+    points:
+      - "Sessions hit their scaling wall."
+      - "JWT cuts auth p99 latency by ~38%."
+      - "Approve phased rollout starting next sprint."
+
+  - type: qa
+    title: "Questions?"
+    contact: "y.j.chen@example.com"
