@@ -106,7 +106,7 @@ Present ALL of the following to the user. Use Cursor's interactive selection fea
 
 4. **Template** — Suggest options:
    - Use default template (clean 16:9)
-   - I have a company .pptx template → ask for file path
+   - I have a company .pptx template → ask for file path. *(Advise the user to provide a template that contains at least a few sample slides using their preferred layouts, as the system will automatically detect and prioritize the layouts actually used in the file.)*
 
 5. **Visual style** — Suggest options:
    - Editorial — clean and professional with accent bars and surface cards
@@ -145,7 +145,7 @@ Only when the user supplied a template:
    ```bash
    python scripts/onboard_template.py path/to/company-template.pptx --auto
    ```
-   This script performs geometric collision detection on the template to automatically calculate "Safe Areas" that avoid corporate logos and master slide decorations. It creates a `.meta.yaml` file next to the template. When `build_deck.py` runs, it will read this file and constrain complex slides (Code, Comparison) within these safe areas to perfectly blend with the template.
+   This script performs geometric collision detection on the template to automatically calculate "Safe Areas" that avoid corporate logos and master slide decorations. **It intelligently analyzes the largest true body placeholder (ignoring small footer/date boxes) and heavily prioritizes layouts that are actually used by existing slides in the file.** It creates a `.meta.yaml` file next to the template. When `build_deck.py` runs, it will read this file and constrain complex slides (Code, Comparison) within these safe areas to perfectly blend with the template.
 
 2. **Inspect layouts** (optional but recommended):
    ```bash

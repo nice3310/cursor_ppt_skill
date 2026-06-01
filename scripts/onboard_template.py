@@ -35,21 +35,73 @@ _MAPPING_HINTS: dict[str, list[str]] = {
 def _emu_to_in(v: int | None) -> float | None:
     return None if v is None else round(Emu(v).inches, 3)
 
-def _suggest_mappings(prs) -> dict[str, int]:
-    layouts_lower = [(i, layout.name.lower()) for i, layout in enumerate(prs.slide_layouts)]
-    mappings: dict[str, int] = {}
-    for slide_type, fragments in _MAPPING_HINTS.items():
-        match_idx = None
-        for frag in fragments:
-            for i, name in layouts_lower:
-                if frag in name:
-                    match_idx = i
-                    break
-            if match_idx is not None:
+def _score_layout(layout_idx: int, layout, slide_type: str) -> int:
+    score = 0
+    name = layout.name.lower()
+
+    # 1. Tally placeholders
+    title_count = 0
+    body_count = 0
+    for shape in layout.placeholders:
+        if shape.placeholder_format.type in (PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE):
+            title_count += 1
+        elif shape.placeholder_format.type in (PP_PLACEHOLDER.BODY, PP_PLACEHOLDER.OBJECT):
+            body_count += 1
+
+    # 2. Semantic Hinting (Name Matching)
+    if slide_type in _MAPPING_HINTS:
+        for frag in _MAPPING_HINTS[slide_type]:
+            if frag in name:
+                score += 50
                 break
-        if match_idx is None:
-            match_idx = 0  # Fallback to the first layout
-        mappings[slide_type] = match_idx
+
+    # 3. Structural Signature Scoring
+    if slide_type == "title":
+        if title_count >= 1: score += 20
+        if body_count == 0: score += 30
+        if body_count > 0: score -= 50
+        if layout_idx == 0: score += 50  # Layout 0 is almost always the title slide
+    elif slide_type == "comparison":
+        if title_count >= 1: score += 10
+        if body_count >= 2: score += 50
+        elif body_count == 1: score -= 20
+        else: score -= 50
+        if layout_idx == 0: score -= 50
+    elif slide_type == "section":
+        if title_count >= 1: score += 20
+        if body_count == 0: score += 30
+        if body_count > 0: score -= 50
+        if "section" in name or "transition" in name: score += 30
+        if layout_idx == 0: score -= 50
+    else:
+        # bullets, code, statement, diagram, image, table, summary, qa
+        if title_count >= 1: score += 10
+        if body_count == 1: score += 40
+        elif body_count > 1: score -= 30  # Penalty for too many bodies
+        else: score -= 30 # Penalty for no body
+        if layout_idx == 0: score -= 5000  # NEVER use the title slide for content
+
+    return score
+
+def _suggest_mappings(prs) -> dict[str, int]:
+    used_layout_indices = {prs.slide_layouts.index(slide.slide_layout) for slide in prs.slides}
+
+    mappings: dict[str, int] = {}
+    for slide_type in _MAPPING_HINTS.keys():
+        best_idx = 0
+        best_score = -9999
+        
+        for i, layout in enumerate(prs.slide_layouts):
+            s = _score_layout(i, layout, slide_type)
+            if i in used_layout_indices:
+                s += 1000  # HUGE boost for layouts actually used in the template
+                
+            # Give a slight edge to earlier layouts if scores are tied
+            if s > best_score:
+                best_score = s
+                best_idx = i
+                
+        mappings[slide_type] = best_idx
     return mappings
 
 def _intersect(box1, box2):
@@ -62,15 +114,23 @@ def _calc_safe_area(prs, layout_idx: int) -> dict[str, float]:
     sw = _emu_to_in(prs.slide_width)
     sh = _emu_to_in(prs.slide_height)
 
-    # If there is a body placeholder, use it directly as the safe area
+    # If there are body placeholders, use the one with the largest area as the safe area
+    best_body_ph = None
+    best_area = -1
     for ph in layout.placeholders:
         if ph.placeholder_format.type in (PP_PLACEHOLDER.BODY, PP_PLACEHOLDER.OBJECT):
-            return {
-                "left": _emu_to_in(ph.left),
-                "top": _emu_to_in(ph.top),
-                "width": _emu_to_in(ph.width),
-                "height": _emu_to_in(ph.height)
-            }
+            area = _emu_to_in(ph.width) * _emu_to_in(ph.height)
+            if area > best_area:
+                best_area = area
+                best_body_ph = ph
+
+    if best_body_ph:
+        return {
+            "left": _emu_to_in(best_body_ph.left),
+            "top": _emu_to_in(best_body_ph.top),
+            "width": _emu_to_in(best_body_ph.width),
+            "height": _emu_to_in(best_body_ph.height)
+        }
 
     # Otherwise, compute bounding box using heuristics
     margin = 0.5
@@ -130,6 +190,13 @@ def _calc_safe_area(prs, layout_idx: int) -> dict[str, float]:
     }
 
 def main(argv: list[str] | None = None) -> int:
+    import sys
+    if sys.stdout.encoding.lower() != 'utf-8':
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except AttributeError:
+            pass
+
     parser = argparse.ArgumentParser(description="Onboard a .pptx template interactively or headlessly.")
     parser.add_argument("template", type=Path)
     parser.add_argument("--auto", action="store_true", help="Run headlessly without interactive prompts.")

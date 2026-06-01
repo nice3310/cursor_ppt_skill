@@ -79,6 +79,8 @@ def _bg(slide: PptxSlide, color: RGBColor) -> None:
 
 
 def _rect(slide, shape_type, left, top, width, height, fill=None, line=None):
+    width = max(0.01, width)
+    height = max(0.01, height)
     shp = slide.shapes.add_shape(
         shape_type, Inches(left), Inches(top), Inches(width), Inches(height)
     )
@@ -132,6 +134,8 @@ def _textbox(
     height,
     anchor: MSO_ANCHOR = MSO_ANCHOR.TOP,
 ):
+    width = max(0.01, width)
+    height = max(0.01, height)
     box = slide.shapes.add_textbox(Inches(left), Inches(top), Inches(width), Inches(height))
     tf = box.text_frame
     tf.word_wrap = True
@@ -1743,9 +1747,19 @@ def render_slide(
         layout_idx = meta_config['mappings'].get(slide_model.type, 0)
         sa = meta_config['safe_areas'].get(layout_idx)
         
-        # Simple Slides: Use native placeholders, completely bypass custom drawing
-        if slide_model.type in ("title", "section", "statement", "bullets", "quote", "summary", "qa"):
-            slide = prs.slides.add_slide(prs.slide_layouts[layout_idx])
+        layout = prs.slide_layouts[layout_idx]
+        has_title = any(s.placeholder_format.type in (PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE) for s in layout.placeholders)
+        has_body = any(s.placeholder_format.type in (PP_PLACEHOLDER.BODY, PP_PLACEHOLDER.OBJECT) for s in layout.placeholders)
+
+        can_use_native = False
+        if slide_model.type in ("title", "section", "statement", "quote"):
+            can_use_native = has_title
+        elif slide_model.type in ("bullets", "summary", "qa"):
+            can_use_native = has_title and has_body
+
+        # Simple Slides WITH valid placeholders: Use native placeholders, bypass custom drawing
+        if can_use_native:
+            slide = prs.slides.add_slide(layout)
             
             # Find and fill title
             for shape in slide.placeholders:
@@ -1770,21 +1784,33 @@ def render_slide(
                         shape.text = slide_model.answer
                         break
 
+            # Soft-delete unused placeholders by moving them far off-screen instead of filling with spaces
+            for shape in slide.placeholders:
+                if shape.has_text_frame and not shape.text.strip():
+                    shape.left = Inches(-100)
+                    shape.top = Inches(-100)
+
             _set_notes(slide, slide_model.notes)
             return slide
             
-        # Complex Slides: Use safe area constraints
+        # Complex Slides OR Simple Slides without matching native placeholders:
+        # Use safe area constraints & Custom Renderers
         # Create a shallow copy of theme and style using dataclasses.replace
         theme = dataclasses.replace(theme)
         style = dataclasses.replace(style)
         
         if sa:
             slide_w, slide_h = _slide_size_in(prs)
+            
+            # Enforce a minimum safe area height to prevent layout crushing
+            min_height = 3.0
+            valid_h = sa['height'] if sa['height'] >= min_height else max(min_height, slide_h - sa['top'] - 0.5)
+
             theme = dataclasses.replace(
                 theme,
                 margin_left=sa['left'],
                 margin_right=slide_w - (sa['left'] + sa['width']),
-                margin_bottom=slide_h - (sa['top'] + sa['height'])
+                margin_bottom=slide_h - (sa['top'] + valid_h)
             )
             style = dataclasses.replace(
                 style,
@@ -1812,9 +1838,10 @@ def render_slide(
             )
             
             # Since we used the layout directly, we need to hide native placeholders to avoid collision
-            # Our custom renderers draw their own title and text boxes.
+            # Soft-delete by moving them far off-screen
             for shape in res.placeholders:
-                shape.element.getparent().remove(shape.element)
+                shape.left = Inches(-100)
+                shape.top = Inches(-100)
                 
             return res
         finally:
