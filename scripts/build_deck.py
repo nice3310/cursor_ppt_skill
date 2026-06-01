@@ -95,6 +95,13 @@ def build(outline_path: Path, output_override: Path | None, *, mermaid: bool, st
     prs = Presentation(str(template)) if template else Presentation()
     _wipe_slides(prs)
 
+    meta_config = None
+    if template and template.name != "default.pptx":
+        meta_path = template.with_suffix(".meta.yaml")
+        if meta_path.exists():
+            with open(meta_path, "r", encoding="utf-8") as f:
+                meta_config = yaml.safe_load(f)
+
     theme = get_theme(outline.meta.theme)
     style = get_style(style_override or outline.meta.style)
     mermaid_renderer = _make_mermaid_renderer(mermaid, theme)
@@ -117,6 +124,7 @@ def build(outline_path: Path, output_override: Path | None, *, mermaid: bool, st
             page=i,
             total=total,
             section_index=section_counter if slide_model.type == "section" else None,
+            meta_config=meta_config,
         )
 
     out_path = output_override or (

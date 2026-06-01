@@ -72,14 +72,11 @@ npx --no -- mmdc --version
 ```
 
 - If it succeeds → mermaid is ready, proceed silently.
-- If it errors → present the user with **exactly two options**. Use Cursor's interactive selection to present these options if available.
+- If it errors → **Mermaid is mandatory for this skill.** You MUST guide the user to install it.
+  - Run `npm install` from the skill directory.
+  - If Node.js is not installed at all, tell the user forcefully: "Node.js is required to render architecture diagrams. Please install it from https://nodejs.org, then we will continue." Do not give them an option to skip.
 
-  1. **"Install Mermaid now (recommended)"** → run `npm install` from the skill directory, confirm when done, then proceed.
-  2. **"Skip diagram slides for this deck"** → when drafting the outline in Phase 4, DO NOT use `type: diagram` at all. Convert every diagram slide to `type: bullets` with text descriptions of the flow/architecture instead.
-
-  - If Node.js is not installed at all, tell the user to install it from https://nodejs.org first, then re-run.
-
-**NEVER proceed with empty placeholder diagram boxes. This is a hard rule.** There is no "build with placeholders" option. Either mermaid is installed and diagrams render, or diagram slides are converted to bullets.
+**NEVER proceed with empty placeholder diagram boxes, and NEVER suggest skipping diagrams.** The power of this tool relies on visual diagrams.
 
 Once all three checks pass (or are explicitly resolved), proceed to Phase 1.
 
@@ -134,20 +131,26 @@ Present ALL of the following to the user. Use Cursor's interactive selection fea
 8. **Source material** — What is this deck about? (free text — repo diff, concept, architecture, etc.)
 
 **CRITICAL RULES:**
-- Do NOT guess duration. ALWAYS ask.
-- Do NOT guess audience. ALWAYS ask.
+- Be decisive. Do NOT guess the answers, but forcefully ask the user to provide them if missing.
 - Do NOT skip the style/theme selection.
 - Do NOT proceed until all 8 items are confirmed.
-- If the user says "just make something about X", respond: "I'd love to! Let me ask a few quick questions first to make sure the deck fits your needs perfectly." Then present items 1–8.
-- After all 8 items are confirmed, present a **confirmation summary** as a table and ask the user to approve before moving to Phase 3.
+- If the user says "just make something about X", respond: "I will generate this for you, but I MUST confirm the following parameters first to ensure high quality." Then present items 1–8.
+- After all 8 items are confirmed, present a **firm confirmation summary** as a table and ask the user to approve before moving to Phase 2.
 
-### Phase 2 — Template inspection
+### Phase 2 — Template inspection & onboarding
 
 Only when the user supplied a template:
 
-```bash
-python scripts/inspect_template.py path/to/company-template.pptx -o template-spec.yaml
-```
+1. **Auto-calculate Safe Areas**:
+   ```bash
+   python scripts/onboard_template.py path/to/company-template.pptx --auto
+   ```
+   This script performs geometric collision detection on the template to automatically calculate "Safe Areas" that avoid corporate logos and master slide decorations. It creates a `.meta.yaml` file next to the template. When `build_deck.py` runs, it will read this file and constrain complex slides (Code, Comparison) within these safe areas to perfectly blend with the template.
+
+2. **Inspect layouts** (optional but recommended):
+   ```bash
+   python scripts/inspect_template.py path/to/company-template.pptx -o template-spec.yaml
+   ```
 
 Read `template-spec.yaml`. It tells you:
 
@@ -232,9 +235,8 @@ python -c "import yaml,sys; d=yaml.safe_load(open(sys.argv[1])); print(sum(1 for
   python scripts/build_deck.py outline.yaml
   ```
 - If the count is **> 0 AND mmdc is not available** → **do not build yet**. Tell the user:
-  > "This outline has N diagram slide(s) but mermaid is not installed. Options: (1) install mermaid now with `npm install`, (2) I replace the diagram slides with `type: bullets` + a text description."
-
-  **Do NOT offer a "build with placeholders" option.** Empty diagram boxes are never acceptable. Wait for the user's choice before proceeding.
+  > "This outline contains diagram slides, but mermaid (mmdc) is not installed. I am running `npm install` to install it now."
+  Run the installation. Do not ask for permission to skip it.
 - If the count is **> 0 AND mmdc is available** → build normally; diagrams will render.
 
 The output path comes from `meta.output`.
@@ -249,6 +251,7 @@ Loop: validate -> build -> review -> edit outline -> validate -> build.
 
 Execute these; do not paste their contents into chat.
 
+- **`scripts/onboard_template.py <template.pptx> --auto`** — headless geometric safe-area calculation for company templates. Run in Phase 2 to generate `.meta.yaml`.
 - **`scripts/inspect_template.py <template.pptx>`** — dump a template's layouts and a suggested slide-type-to-layout mapping. Run in Phase 2.
 - **`scripts/scan_assets.py <folder>`** — list images in a folder with dimensions and a suggested layout. Run in Phase 4 before writing image slides.
 - **`scripts/validate_outline.py <outline.yaml>`** — schema + density + pacing checks. Run in Phase 5 and before any rebuild.

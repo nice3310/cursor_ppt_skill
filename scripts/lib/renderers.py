@@ -1722,6 +1722,9 @@ RENDERERS = {
 }
 
 
+import dataclasses
+from pptx.enum.shapes import PP_PLACEHOLDER
+
 def render_slide(
     prs,
     slide_model: Slide,
@@ -1734,7 +1737,91 @@ def render_slide(
     page=None,
     total=None,
     section_index=None,
+    meta_config=None,
 ):
+    if meta_config:
+        layout_idx = meta_config['mappings'].get(slide_model.type, 0)
+        sa = meta_config['safe_areas'].get(layout_idx)
+        
+        # Simple Slides: Use native placeholders, completely bypass custom drawing
+        if slide_model.type in ("title", "section", "statement", "bullets", "quote", "summary", "qa"):
+            slide = prs.slides.add_slide(prs.slide_layouts[layout_idx])
+            
+            # Find and fill title
+            for shape in slide.placeholders:
+                if shape.placeholder_format.type in (PP_PLACEHOLDER.TITLE, PP_PLACEHOLDER.CENTER_TITLE):
+                    shape.text = getattr(slide_model, 'title', '') or getattr(slide_model, 'text', '') or getattr(slide_model, 'quote', '')
+                    break
+            
+            # Find and fill body
+            if slide_model.type == "bullets" and hasattr(slide_model, 'bullets'):
+                for shape in slide.placeholders:
+                    if shape.placeholder_format.type in (PP_PLACEHOLDER.BODY, PP_PLACEHOLDER.OBJECT):
+                        tf = shape.text_frame
+                        tf.text = ""
+                        for b in slide_model.bullets:
+                            p = tf.add_paragraph()
+                            p.text = str(b)
+                            p.level = 0
+                        break
+            elif slide_model.type == "qa" and hasattr(slide_model, 'answer'):
+                for shape in slide.placeholders:
+                    if shape.placeholder_format.type in (PP_PLACEHOLDER.BODY, PP_PLACEHOLDER.OBJECT):
+                        shape.text = slide_model.answer
+                        break
+
+            _set_notes(slide, slide_model.notes)
+            return slide
+            
+        # Complex Slides: Use safe area constraints
+        # Create a shallow copy of theme and style using dataclasses.replace
+        theme = dataclasses.replace(theme)
+        style = dataclasses.replace(style)
+        
+        if sa:
+            slide_w, slide_h = _slide_size_in(prs)
+            theme = dataclasses.replace(
+                theme,
+                margin_left=sa['left'],
+                margin_right=slide_w - (sa['left'] + sa['width']),
+                margin_bottom=slide_h - (sa['top'] + sa['height'])
+            )
+            style = dataclasses.replace(
+                style,
+                content_top_offset=sa['top'] - CONTENT_TOP,
+                margin_scale=1.0
+            )
+
+        # We need to override pick_blank_layout just for this run so it uses our mapped layout
+        original_pick_blank = globals().get('pick_blank_layout')
+        globals()['pick_blank_layout'] = lambda p: p.slide_layouts[layout_idx]
+
+        try:
+            fn = RENDERERS[slide_model.type]
+            res = fn(
+                prs,
+                slide_model,
+                theme,
+                style,
+                base_dir=base_dir,
+                mermaid_renderer=mermaid_renderer,
+                footer=footer,
+                page=page,
+                total=total,
+                section_index=section_index,
+            )
+            
+            # Since we used the layout directly, we need to hide native placeholders to avoid collision
+            # Our custom renderers draw their own title and text boxes.
+            for shape in res.placeholders:
+                shape.element.getparent().remove(shape.element)
+                
+            return res
+        finally:
+            if original_pick_blank:
+                globals()['pick_blank_layout'] = original_pick_blank
+
+
     fn = RENDERERS[slide_model.type]
     return fn(
         prs,
