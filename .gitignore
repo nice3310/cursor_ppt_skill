@@ -31,3 +31,5 @@ Thumbs.db
 !templates/default.pptx
 *.png
 !examples/assets/*.png
+
+.antigravitycli/

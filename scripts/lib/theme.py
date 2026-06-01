@@ -112,9 +112,84 @@ def _dark() -> Theme:
     )
 
 
+def _ocean() -> Theme:
+    """Deep blue palette — pairs naturally with the 'modern' style."""
+    return Theme(
+        name="ocean",
+        ink=rgb("E8EAF6"),
+        ink_soft=rgb("90A4AE"),
+        background=rgb("0D1B2A"),
+        surface=rgb("1B2838"),
+        surface_edge=rgb("2A3A4E"),
+        rule=rgb("2A3A4E"),
+        accent=rgb("0EA5E9"),
+        accent_soft=rgb("0C2D48"),
+        accent2=rgb("38BDF8"),
+        on_accent=rgb("FFFFFF"),
+        on_accent_soft=rgb("BAE6FD"),
+        code_bg=rgb("081420"),
+        code_default=rgb("D0E8F8"),
+        table_header_bg=rgb("0EA5E9"),
+        table_header_fg=rgb("FFFFFF"),
+        table_zebra=rgb("1B2838"),
+        pygments_style="monokai",
+    )
+
+
+def _warm() -> Theme:
+    """Amber and earth tones — pairs naturally with the 'vibrant' style."""
+    return Theme(
+        name="warm",
+        ink=rgb("1C1410"),
+        ink_soft=rgb("6B5B4F"),
+        background=rgb("FFFBF5"),
+        surface=rgb("FFF3E0"),
+        surface_edge=rgb("F0D9B5"),
+        rule=rgb("F0D9B5"),
+        accent=rgb("E65100"),
+        accent_soft=rgb("FFF3E0"),
+        accent2=rgb("F59E0B"),
+        on_accent=rgb("FFFFFF"),
+        on_accent_soft=rgb("FFCC80"),
+        code_bg=rgb("1A1210"),
+        code_default=rgb("F0DCC8"),
+        table_header_bg=rgb("E65100"),
+        table_header_fg=rgb("FFFFFF"),
+        table_zebra=rgb("FFF3E0"),
+        pygments_style="monokai",
+    )
+
+
+def _forest() -> Theme:
+    """Deep green and gold — sophisticated and grounded."""
+    return Theme(
+        name="forest",
+        ink=rgb("1A2E1A"),
+        ink_soft=rgb("5C7A5C"),
+        background=rgb("F5F9F0"),
+        surface=rgb("E8F0E0"),
+        surface_edge=rgb("C8D8B8"),
+        rule=rgb("C8D8B8"),
+        accent=rgb("2E7D32"),
+        accent_soft=rgb("E8F5E9"),
+        accent2=rgb("C9A837"),
+        on_accent=rgb("FFFFFF"),
+        on_accent_soft=rgb("A5D6A7"),
+        code_bg=rgb("101810"),
+        code_default=rgb("D0E8D0"),
+        table_header_bg=rgb("2E7D32"),
+        table_header_fg=rgb("FFFFFF"),
+        table_zebra=rgb("E8F0E0"),
+        pygments_style="monokai",
+    )
+
+
 _PRESETS = {
     "light": _light,
     "dark": _dark,
+    "ocean": _ocean,
+    "warm": _warm,
+    "forest": _forest,
 }
 
 
@@ -126,3 +201,4 @@ def get_theme(name: str | None = None) -> Theme:
 
 def default_theme() -> Theme:
     return _light()
+

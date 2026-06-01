@@ -9,6 +9,7 @@ Stop fighting with PowerPoint. This skill handles the structure, layout, and vis
 ## 🚀 Key Capabilities
 
 - **From Scratch**: Give it a topic, and it brainstorms the narrative arc and slide content.
+- **5 Visual Styles**: Choose from editorial, corporate, minimal, modern, or vibrant design languages — each with distinct layouts, decorations, and visual rhythm.
 - **Visual Logic**: Automatically renders diagrams (Mermaid), code blocks, and comparison charts.
 - **Design Guardrails**: Prevents "death by bullets" with built-in density validation.
 - **Template Aware**: Inherit your company's branding by simply pointing to an existing `.pptx`.
@@ -100,6 +101,7 @@ Core concept: Each slide must have a `headline` (a full assertion sentence, not 
 meta:
   title: "JWT Migration"
   output: "./deck.pptx"
+  style: "modern"          # NEW: visual design language (editorial, corporate, minimal, modern, vibrant)
   # template: "./company-template.pptx"  # Uncomment if using a company template
 
 narrative:

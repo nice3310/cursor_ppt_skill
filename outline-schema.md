@@ -20,10 +20,13 @@ meta:
   date: "2026-05-29"                     # optional, ISO date string
   template: "./company-template.pptx"    # optional, path; if absent -> templates/default.pptx
   output: "./deck.pptx"                  # required, path where build_deck.py writes
-  theme: "light"                         # optional: "light" (default) or "dark"
+  style: "editorial"                     # optional: "editorial" (default), "corporate", "minimal", "modern", "vibrant"
+  theme: "light"                         # optional: "light", "dark", "ocean", "warm", "forest" (default: "light")
   footer: "Migrating auth to JWT"        # optional footer text; defaults to meta.title
   assets_dir: "./assets"                 # optional; where image files live (see image type)
 ```
+
+`style` controls the visual design language — layout positions, decorations, bullet markers, card treatments. It is independent of the color `theme`. If omitted, defaults to `"editorial"` for backward compatibility.
 
 ## Design fields (shared)
 
@@ -254,6 +257,7 @@ Closing slide. `contact` optional.
 meta:
   title: "..."
   template: "./company-template.pptx"
+  style: "editorial"
   output: "./deck.pptx"
 
 narrative:

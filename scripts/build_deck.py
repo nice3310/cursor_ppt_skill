@@ -4,13 +4,15 @@ Flow:
   1. Load + validate the outline (hard schema only; soft warnings run separately).
   2. Resolve template path: meta.template -> templates/default.pptx -> python-pptx default.
   3. Open template, REMOVE any pre-existing slides (we want a clean deck).
-  4. Pick a theme (meta.theme) and render each slide with the designed renderers.
+  4. Pick a theme (meta.theme), pick a style (meta.style), and render each slide
+     with the designed renderers.
   5. Save to meta.output.
 
 Usage:
     python scripts/build_deck.py path/to/outline.yaml
     python scripts/build_deck.py path/to/outline.yaml --no-mermaid
     python scripts/build_deck.py path/to/outline.yaml -o custom.pptx
+    python scripts/build_deck.py path/to/outline.yaml --style modern
 """
 
 from __future__ import annotations
@@ -26,6 +28,7 @@ from pydantic import ValidationError
 sys.path.insert(0, str(Path(__file__).parent))
 from lib.renderers import render_slide  # noqa: E402
 from lib.schema import Outline  # noqa: E402
+from lib.styles import Style, get_style  # noqa: E402
 from lib.theme import Theme, get_theme  # noqa: E402
 
 
@@ -84,7 +87,7 @@ def _make_mermaid_renderer(enabled: bool, theme: Theme):
     return _do
 
 
-def build(outline_path: Path, output_override: Path | None, *, mermaid: bool) -> Path:
+def build(outline_path: Path, output_override: Path | None, *, mermaid: bool, style_override: str | None = None) -> Path:
     outline = _load(outline_path)
     outline_dir = outline_path.resolve().parent
 
@@ -93,6 +96,7 @@ def build(outline_path: Path, output_override: Path | None, *, mermaid: bool) ->
     _wipe_slides(prs)
 
     theme = get_theme(outline.meta.theme)
+    style = get_style(style_override or outline.meta.style)
     mermaid_renderer = _make_mermaid_renderer(mermaid, theme)
 
     footer = outline.meta.footer or outline.meta.title
@@ -106,6 +110,7 @@ def build(outline_path: Path, output_override: Path | None, *, mermaid: bool) ->
             prs,
             slide_model,
             theme,
+            style,
             base_dir=outline_dir,
             mermaid_renderer=mermaid_renderer,
             footer=footer,
@@ -133,6 +138,13 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Skip mermaid rendering (diagrams become placeholders)",
     )
+    parser.add_argument(
+        "--style",
+        type=str,
+        choices=["editorial", "corporate", "minimal", "modern", "vibrant"],
+        default=None,
+        help="Override meta.style (visual design language)",
+    )
     args = parser.parse_args(argv)
 
     if not args.outline.exists():
@@ -140,7 +152,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     try:
-        out = build(args.outline, args.output, mermaid=not args.no_mermaid)
+        out = build(args.outline, args.output, mermaid=not args.no_mermaid, style_override=args.style)
     except ValidationError as e:
         print("schema errors (run validate_outline.py for details):", file=sys.stderr)
         for err in e.errors():

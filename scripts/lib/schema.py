@@ -51,7 +51,8 @@ class Meta(_Base):
     date: Optional[Union[_date, str]] = None
     template: Optional[str] = None
     output: str = Field(..., min_length=1)
-    theme: Optional[Literal["light", "dark"]] = None
+    theme: Optional[Literal["light", "dark", "ocean", "warm", "forest"]] = None
+    style: Optional[Literal["editorial", "corporate", "minimal", "modern", "vibrant"]] = None
     assets_dir: Optional[str] = None
     footer: Optional[str] = None  # footer text on content slides; defaults to meta.title
 

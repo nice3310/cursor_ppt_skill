@@ -15,7 +15,9 @@ Before naming a single slide, the agent must answer four questions out loud and 
 - **What action** should they take after? (approve, decide, learn, align)
 - **What do they already know?** (skip anything they know; explain anything they don't)
 
-If the user hasn't told you, **ask**. Do not guess. A deck written for the wrong audience is worthless no matter how pretty.
+If the user hasn't told you, **you MUST ask**. Do not guess. Do not infer. Do not proceed. These questions are a hard gate — the agent must have explicit user answers for all of them before writing a single slide. A deck written for the wrong audience is worthless no matter how pretty.
+
+- **Visual style**: which of the 5 built-in styles (`editorial`, `corporate`, `minimal`, `modern`, `vibrant`) does the user want? If unsure, offer "Surprise me" and pick based on content type.
 
 ---
 

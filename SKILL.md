@@ -72,33 +72,74 @@ npx --no -- mmdc --version
 ```
 
 - If it succeeds → mermaid is ready, proceed silently.
-- If it errors → tell the user **immediately**:
+- If it errors → present the user with **exactly two options**. Use Cursor's interactive selection to present these options if available.
 
-  > "Mermaid (diagram rendering) is not installed. Any `type: diagram` slides will be empty placeholders without it. Want me to install it now? It takes about a minute and requires Node.js. (yes / no / skip diagrams)"
+  1. **"Install Mermaid now (recommended)"** → run `npm install` from the skill directory, confirm when done, then proceed.
+  2. **"Skip diagram slides for this deck"** → when drafting the outline in Phase 4, DO NOT use `type: diagram` at all. Convert every diagram slide to `type: bullets` with text descriptions of the flow/architecture instead.
 
-  - **yes** → run `npm install` from the skill directory, confirm when done, then proceed.
-  - **no / skip diagrams** → note that diagram slides will be placeholders; when drafting the outline in Phase 4, avoid `type: diagram` or replace them with `type: image` (user supplies screenshot) or `type: bullets`.
   - If Node.js is not installed at all, tell the user to install it from https://nodejs.org first, then re-run.
 
-Do **not** silently proceed with mermaid unavailable if the outline will contain diagram slides.
+**NEVER proceed with empty placeholder diagram boxes. This is a hard rule.** There is no "build with placeholders" option. Either mermaid is installed and diagrams render, or diagram slides are converted to bullets.
 
 Once all three checks pass (or are explicitly resolved), proceed to Phase 1.
 
 ---
 
-### Phase 1 — Discovery
+### Phase 1 — Discovery (MANDATORY checklist)
 
-Ask, and do not guess:
+Present ALL of the following to the user. Use Cursor's interactive selection features (e.g. numbered options the user can click) when possible. DO NOT proceed to Phase 3 until every item has a user-confirmed answer.
 
-- **Audience**: who, with what background?
-- **Duration**: 5 / 15 / 30 / 60 minutes?
-- **Goal**: what action should the audience take after?
-- **Template**: do they have a company `.pptx` template? Get the path.
-- **Source material**: what is this deck about? Repo diff? Concept explainer? Architecture review? Get the specifics (file paths, PR link, doc, etc.).
-- **Images**: do they have images/screenshots/charts to include? If so, point them at an `assets/` folder next to where the deck will live (see Phase 4 image workflow). If not, decide per-slide whether to find one on the web or use a diagram instead.
-- **Theme** (optional): light (default) or dark.
+**Required confirmations (MUST ask, MUST get answer):**
 
-If any of the first three is unclear, ask. A deck written for the wrong audience is worthless.
+1. **Audience** — Who will see this? Suggest options:
+   - Technical team (engineers)
+   - Mixed audience (some technical, some not)
+   - Leadership / executives
+   - External / clients
+   - [Let user type custom]
+
+2. **Duration** — How long is the talk? Suggest options:
+   - 5 minutes (lightning talk, ~3-4 content slides)
+   - 15 minutes (standard, ~7-10 content slides)
+   - 30 minutes (deep dive, ~15-20 content slides)
+   - 60 minutes (workshop, ~25-35 content slides)
+   - [Let user type custom]
+
+3. **Goal** — What should the audience do after? (free text, MUST ask)
+
+4. **Template** — Suggest options:
+   - Use default template (clean 16:9)
+   - I have a company .pptx template → ask for file path
+
+5. **Visual style** — Suggest options:
+   - Editorial — clean and professional with accent bars and surface cards
+   - Corporate — bold headings, strong color blocks, authoritative
+   - Minimal — lots of whitespace, understated elegance
+   - Modern — gradients, rounded cards, contemporary feel
+   - Vibrant — colorful, energetic, eye-catching
+   - Surprise me (let the tool pick based on content)
+
+6. **Color theme** — Suggest options:
+   - Light (white background, dark text)
+   - Dark (dark background, light text)
+   - Ocean (deep blue palette)
+   - Warm (amber and earth tones)
+   - Forest (green and gold)
+
+7. **Images/assets** — Suggest options:
+   - I have images/screenshots to include → ask for folder path, then run `scripts/scan_assets.py`
+   - Find suitable images from the web for me
+   - No images needed — diagrams and text only
+
+8. **Source material** — What is this deck about? (free text — repo diff, concept, architecture, etc.)
+
+**CRITICAL RULES:**
+- Do NOT guess duration. ALWAYS ask.
+- Do NOT guess audience. ALWAYS ask.
+- Do NOT skip the style/theme selection.
+- Do NOT proceed until all 8 items are confirmed.
+- If the user says "just make something about X", respond: "I'd love to! Let me ask a few quick questions first to make sure the deck fits your needs perfectly." Then present items 1–8.
+- After all 8 items are confirmed, present a **confirmation summary** as a table and ask the user to approve before moving to Phase 3.
 
 ### Phase 2 — Template inspection
 
@@ -152,7 +193,9 @@ Hard rules to apply while drafting:
 - **Kicker**: add a short `kicker:` eyebrow to group slides into beats ("The problem", "Evidence", "Ask").
 - **Pacing**: 1.5-2 min per content slide for technical talks.
 
-If the user has a template, set `meta.template:` to the template path. Otherwise leave it unset and the built-in `templates/default.pptx` is used. Set `meta.theme: dark` for a dark deck.
+If the user has a template, set `meta.template:` to the template path. Otherwise leave it unset and the built-in `templates/default.pptx` is used. Set `meta.theme:` to the user's chosen color theme from Phase 1 item 6.
+
+**Set `meta.style:` to match the user's choice from Phase 1 item 5.** Valid values: `editorial`, `corporate`, `minimal`, `modern`, `vibrant`. If the user chose "Surprise me", pick based on content type: technical → `editorial` or `minimal`, business → `corporate`, teaching → `modern`, creative → `vibrant`.
 
 Always set `meta.output:` to the desired `.pptx` path (relative to the outline file).
 
@@ -189,9 +232,9 @@ python -c "import yaml,sys; d=yaml.safe_load(open(sys.argv[1])); print(sum(1 for
   python scripts/build_deck.py outline.yaml
   ```
 - If the count is **> 0 AND mmdc is not available** → **do not build yet**. Tell the user:
-  > "This outline has N diagram slide(s) but mermaid is not installed. The diagrams will be empty boxes. Options: (1) install mermaid now with `npm install`, (2) I replace the diagram slides with `type: bullets` + a text description, (3) build anyway with placeholders."
+  > "This outline has N diagram slide(s) but mermaid is not installed. Options: (1) install mermaid now with `npm install`, (2) I replace the diagram slides with `type: bullets` + a text description."
 
-  Wait for the user's choice before proceeding.
+  **Do NOT offer a "build with placeholders" option.** Empty diagram boxes are never acceptable. Wait for the user's choice before proceeding.
 - If the count is **> 0 AND mmdc is available** → build normally; diagrams will render.
 
 The output path comes from `meta.output`.
