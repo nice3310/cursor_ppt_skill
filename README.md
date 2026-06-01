@@ -16,57 +16,46 @@ Stop fighting with PowerPoint. This skill handles the structure, layout, and vis
 
 ---
 
-## Installation (3 steps)
-
-### Step 1: Copy to Cursor personal skills folder
-
-Cursor reads personal skills from this path. Put the entire `cursor_ppt_skill/` folder there:
-
-**Windows**
-```powershell
-Copy-Item -Recurse "cursor_ppt_skill" "$env:USERPROFILE\.cursor\skills\cursor_ppt_skill"
-```
-
-**macOS / Linux**
-```bash
-cp -r cursor_ppt_skill ~/.cursor/skills/cursor_ppt_skill
-```
-
-After restarting Cursor, typing "help me make a ppt" in chat will automatically trigger this skill.
-
-### Step 2: Install Python packages
-
-Requires Python 3.9+.
-
-```powershell
-pip install python-pptx pydantic pyyaml pillow pygments
-```
-
-### Step 3: (Optional) Install mermaid support
-
-Only needed if you want to draw architecture/flow diagrams. Requires Node.js.
-
-```powershell
-cd ~/.cursor/skills/cursor_ppt_skill   # For Windows: $env:USERPROFILE\.cursor\skills\cursor_ppt_skill
-npm install
-```
-
-If not installed, `type: diagram` slides will show placeholder text instead of breaking.
+## Installation
+ 
+ ### Step 1: Copy to Cursor personal skills folder
+ 
+ Cursor reads personal skills from this path. Put the entire `cursor_ppt_skill/` folder there:
+ 
+ **Windows**
+ ```powershell
+ Copy-Item -Recurse "cursor_ppt_skill" "$env:USERPROFILE\.cursor\skills\cursor_ppt_skill"
+ ```
+ 
+ **macOS / Linux**
+ ```bash
+ cp -r cursor_ppt_skill ~/.cursor/skills/cursor_ppt_skill
+ ```
+ 
+ ### That's it!
+ The Cursor Agent will automatically handle the rest. When you first invoke the skill, the Agent will seamlessly guide you through installing any missing dependencies (like Python packages or Node.js for Mermaid diagrams) without you needing to run manual commands.
 
 ---
 
 ## Usage
 
 ### 1. Talk to the Cursor Agent (Recommended)
-
-In any project's Cursor chat, simply start a conversation. The Agent will guide you through discovery, narrative drafting, and final generation. Try:
-
-- "I want to explain the concept of [Topic] to [Audience], help me brainstorm a 10-slide deck."
-- "Create a pitch deck for a new feature that does [X]."
-- "Turn this technical design doc into a presentation for the executive team."
-- "Use `./company-template.pptx` to make a presentation about our Q3 goals."
-
-### 2. Manual Workflow (for Power Users)
+ 
+ This tool is designed to be a fully interactive AI Agent Skill. In any project's Cursor chat, simply start a conversation. **You do not need to run any scripts manually.** 
+ 
+ The Agent will autonomously:
+ 1. Check your system and install any missing dependencies.
+ 2. Guide you through a **Discovery Phase** (asking about your audience, talk duration, goals, visual style, and colors).
+ 3. Help you define the **Narrative Arc** before any slides are drafted.
+ 4. Generate the `outline.yaml`, validate it against presentation best practices, and automatically build the `.pptx` for you.
+ 
+ Try asking:
+ - "I want to explain the concept of [Topic] to [Audience], help me brainstorm a 10-slide deck."
+ - "Create a pitch deck for a new feature that does [X]."
+ - "Turn this technical design doc into a presentation for the executive team."
+ - "Use `./company-template.pptx` to make a presentation about our Q3 goals."
+ 
+ ### 2. Manual CLI Workflow (for Power Users)
 
 If you prefer to define your slides directly, you can use the `outline.yaml` format.
 
